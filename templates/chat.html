@@ -33,6 +33,38 @@
           <button onclick="joinChat()">Join Chat</button>
         </div>
       </div>
+      <!-- Main Chat Container -->
+      <div id="chatContainer" class="chat-container">
+        <div class="chat-header">
+          <h1>💬 Real-Time Chat Application</h1>
+          <p>Connect with people around the world</p>
+        </div>
+        <div class="main-layout">
+          <div class="sidebar">
+            <div class="user-info">
+              <h3>👤 Logged in as</h3>
+              <div class="user-name" id="currentUsername"></div>
+            </div>
+            <div class="online-users">
+              <h3>🟢 Online Users</h3>
+              <ul id="usersList"></ul>
+            </div>
+          </div>
+          <div class="chat-area">
+            <div id="messages" class="messages-container"></div>
+            <div id="typingIndicator" class="typing-indicator"></div>
+            <div class="input-area">
+              <input
+                type="text"
+                id="messageInput"
+                placeholder="Type a message..."
+                onkeypress="handleKeyPress(event)"
+              />
+              <button id="sendBtn" onclick="sendMessage()">Send ➤</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </body>
   </head>
 </html>
