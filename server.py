@@ -20,3 +20,17 @@ def index():
 @socketio.on("connect")
 def handle_connect():
     print(f"Client connected: {request.sid}")
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    username = active_users.get(request.sid)
+    if username:
+        # Remove user from active users
+        del active_users[request.sid]
+        # Notify all clients
+        emit('user_left', {
+            'username': username,
+            'timestamp': datetime.now().strftime('%I:%M %p')
+        }, broadcast=True)
+        # Update user list
+        emit('update_users', list(active_users.values()), broadcast=True)
