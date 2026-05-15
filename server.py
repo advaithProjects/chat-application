@@ -65,6 +65,26 @@ def handle_join(data):
     # Update user list for all
     emit("update_users", list(active_users.values()), broadcast=True)
 
+    @socketio.on('send_message')
+    def handle_message(data):
+        username = active_users.get(request.sid, 'Anonymous')
+        message_data = {
+            'username': username,
+            'text': data['text'],
+            'timestamp': datetime.now().strftime('%I:%M %p'),
+            'system': False
+        }
+        emit('message', message_data, broadcast=True)
+
+    @socketio.on('typing')
+    def handle_typing(data):
+        username = active_users.get(request.sid)
+        if username:
+            emit('user_typing', {
+                'username': username,
+                'is_typing': data['is_typing']
+            }, broadcast=True, include_self=False)
+
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000)
