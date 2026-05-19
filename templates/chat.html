@@ -389,6 +389,65 @@
           </div>
         </div>
       </div>
+      <script>
+        let socket;
+        let currentUser = "";
+        let typingTimeout;
+
+        function joinChat() {
+          const username = document
+            .getElementById("usernameInput")
+            .value.trim();
+          if (!username) {
+            alert("Please enter a username!");
+            return;
+          }
+
+          currentUser = username;
+          document.getElementById("loginModal").style.display = "none";
+          document.getElementById("chatContainer").style.display = "block";
+          document.getElementById("currentUsername").textContent = username;
+
+          // Initialize socket connection
+          socket = io();
+
+          socket.on("connect", function () {
+            socket.emit("join", { username: currentUser });
+          });
+          // Listen for messages
+          socket.on("message", function (data) {
+            addMessage(data);
+          });
+
+          socket.on("user_joined", function (data) {
+            addSystemMessage(`${data.username} joined the chat`);
+          });
+
+          socket.on("user_left", function (data) {
+            addSystemMessage(`${data.username} left the chat`);
+          });
+
+          socket.on("update_users", function (users) {
+            updateUsersList(users);
+          });
+
+          socket.on("user_typing", function (data) {
+            updateTypingIndicator(data);
+          });
+        }
+
+        function sendMessage() {
+          const input = document.getElementById("messageInput");
+          const text = input.value.trim();
+
+          if (text && socket) {
+            socket.emit("send_message", { text: text });
+            input.value = "";
+            input.focus();
+          }
+        }
+        
+      </script>
     </body>
   </head>
 </html>
