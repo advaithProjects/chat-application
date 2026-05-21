@@ -1,453 +1,520 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-Time Chat Application</title>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        height: 100vh;
-        overflow: hidden;
-      }
-      /* Login Modal */
-      .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        backdrop-filter: blur(5px);
-      }
-
-      .modal-content {
-        background: white;
-        padding: 40px;
-        border-radius: 20px;
-        text-align: center;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        animation: slideIn 0.3s ease;
-      }
-
-      @keyframes slideIn {
-        from {
-          transform: translateY(-50px);
-          opacity: 0;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        to {
-          transform: translateY(0);
-          opacity: 1;
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
         }
-      }
 
-      .modal-content h2 {
-        color: #667eea;
-        margin-bottom: 20px;
-        font-size: 28px;
-      }
-
-      .modal-content input {
-        width: 300px;
-        padding: 12px;
-        margin: 10px 0;
-        border: 2px solid #e0e0e0;
-        border-radius: 10px;
-        font-size: 16px;
-        transition: border-color 0.3s;
-      }
-
-      .modal-content input:focus {
-        outline: none;
-        border-color: #667eea;
-      }
-
-      .modal-content button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        padding: 12px 30px;
-        border-radius: 10px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: transform 0.2s;
-      }
-
-      .modal-content button:hover {
-        transform: translateY(-2px);
-      }
-
-      /* Main Chat Container */
-      .chat-container {
-        display: none;
-        height: 100vh;
-        max-width: 1400px;
-        margin: 0 auto;
-        background: white;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-      }
-      /* Header */
-      .chat-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 20px;
-        text-align: center;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      }
-
-      .chat-header h1 {
-        font-size: 24px;
-        margin-bottom: 5px;
-      }
-
-      .chat-header p {
-        font-size: 12px;
-        opacity: 0.9;
-      }
-      /* Main Layout */
-      .main-layout {
-        display: flex;
-        height: calc(100vh - 80px);
-      }
-
-      /* Sidebar */
-      .sidebar {
-        width: 280px;
-        background: #f8f9fa;
-        border-right: 1px solid #e0e0e0;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .user-info {
-        padding: 20px;
-        background: white;
-        border-bottom: 1px solid #e0e0e0;
-      }
-
-      .user-info h3 {
-        color: #667eea;
-        font-size: 16px;
-        margin-bottom: 10px;
-      }
-
-      .user-name {
-        font-weight: bold;
-        color: #333;
-        font-size: 18px;
-      }
-
-      .online-users {
-        flex: 1;
-        padding: 20px;
-      }
-
-      .online-users h3 {
-        margin-bottom: 15px;
-        color: #333;
-        font-size: 16px;
-      }
-
-      #usersList {
-        list-style: none;
-      }
-
-      #usersList li {
-        padding: 10px;
-        margin: 5px 0;
-        background: white;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        transition: transform 0.2s;
-      }
-
-      #usersList li:hover {
-        transform: translateX(5px);
-      }
-
-      .online-dot {
-        width: 10px;
-        height: 10px;
-        background: #4caf50;
-        border-radius: 50%;
-        display: inline-block;
-        animation: pulse 2s infinite;
-      }
-      @keyframes pulse {
-        0% {
-          box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+        /* Login Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
         }
-        70% {
-          box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
         }
-        100% {
-          box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
-      }
 
-      /* Chat Area */
-      .chat-area {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        background: #ffffff;
-      }
-
-      /* Messages Container */
-      .messages-container {
-        flex: 1;
-        overflow-y: auto;
-        padding: 20px;
-        background: #f5f5f5;
-      }
-
-      /* Message Bubbles */
-      .message {
-        margin-bottom: 20px;
-        animation: fadeIn 0.3s ease;
-      }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .message-header {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 5px;
-        font-size: 12px;
-      }
-
-      .username {
-        font-weight: bold;
-        color: #667eea;
-      }
-
-      .timestamp {
-        color: #999;
-      }
-
-      .message-text {
-        background: white;
-        padding: 10px 15px;
-        border-radius: 18px;
-        display: inline-block;
-        max-width: 70%;
-        word-wrap: break-word;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-      }
-
-      .system-message {
-        text-align: center;
-        font-style: italic;
-        color: #999;
-        font-size: 12px;
-        padding: 5px;
-      }
-
-      /* Typing Indicator */
-      .typing-indicator {
-        padding: 10px 20px;
-        background: white;
-        border-top: 1px solid #e0e0e0;
-        font-size: 12px;
-        color: #999;
-        font-style: italic;
-      }
-
-      /* Input Area */
-      .input-area {
-        padding: 20px;
-        background: white;
-        border-top: 1px solid #e0e0e0;
-        display: flex;
-        gap: 10px;
-      }
-
-      #messageInput {
-        flex: 1;
-        padding: 12px;
-        border: 2px solid #e0e0e0;
-        border-radius: 25px;
-        font-size: 14px;
-        transition: border-color 0.3s;
-      }
-
-      #messageInput:focus {
-        outline: none;
-        border-color: #667eea;
-      }
-
-      #sendBtn {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        padding: 12px 30px;
-        border-radius: 25px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: transform 0.2s;
-      }
-
-      #sendBtn:hover {
-        transform: translateY(-2px);
-      }
-
-      /* Scrollbar Styling */
-      .messages-container::-webkit-scrollbar {
-        width: 8px;
-      }
-
-      .messages-container::-webkit-scrollbar-track {
-        background: #f1f1f1;
-      }
-
-      .messages-container::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 4px;
-      }
-
-      .messages-container::-webkit-scrollbar-thumb:hover {
-        background: #555;
-      }
-
-      /* Responsive Design */
-      @media (max-width: 768px) {
-        .sidebar {
-          display: none;
+        .modal-content h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 28px;
         }
 
         .modal-content input {
-          width: 250px;
+            width: 300px;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
         }
-      }
+
+        .modal-content input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-content button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .modal-content button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Main Chat Container */
+        .chat-container {
+            display: none;
+            height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header */
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #f8f9fa;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-info {
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .user-info h3 {
+            color: #667eea;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .user-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .online-users {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .online-users h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 16px;
+        }
+
+        #usersList {
+            list-style: none;
+        }
+
+        #usersList li {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.2s;
+        }
+
+        #usersList li:hover {
+            transform: translateX(5px);
+        }
+
+        .online-dot {
+            width: 10px;
+            height: 10px;
+            background: #4caf50;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+            }
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+        }
+
+        /* Messages Container */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        /* Message Bubbles */
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .username {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .timestamp {
+            color: #999;
+        }
+
+        .message-text {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 18px;
+            display: inline-block;
+            max-width: 70%;
+            word-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .system-message {
+            text-align: center;
+            font-style: italic;
+            color: #999;
+            font-size: 12px;
+            padding: 5px;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            padding: 10px 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            font-size: 12px;
+            color: #999;
+            font-style: italic;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        #messageInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        #sendBtn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+
+        #sendBtn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Scrollbar Styling */
+        .messages-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .modal-content input {
+                width: 250px;
+            }
+        }
     </style>
-    <body>
-      <!-- Login Modal -->
-      <div id="loginModal" class="modal">
+</head>
+<body>
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
         <div class="modal-content">
-          <h2>💬 Welcome to ChatApp</h2>
-          <input
-            type="text"
-            id="usernameInput"
-            placeholder="Enter your username"
-            maxlength="20"
-          />
-          <br />
-          <button onclick="joinChat()">Join Chat</button>
+            <h2>💬 Welcome to ChatApp</h2>
+            <input type="text" id="usernameInput" placeholder="Enter your username" maxlength="20">
+            <br>
+            <button onclick="joinChat()">Join Chat</button>
         </div>
-      </div>
-      <!-- Main Chat Container -->
-      <div id="chatContainer" class="chat-container">
+    </div>
+
+    <!-- Main Chat Container -->
+    <div id="chatContainer" class="chat-container">
         <div class="chat-header">
-          <h1>💬 Real-Time Chat Application</h1>
-          <p>Connect with people around the world</p>
+            <h1>💬 Real-Time Chat Application</h1>
+            <p>Connect with people around the world</p>
         </div>
         <div class="main-layout">
-          <div class="sidebar">
-            <div class="user-info">
-              <h3>👤 Logged in as</h3>
-              <div class="user-name" id="currentUsername"></div>
+            <div class="sidebar">
+                <div class="user-info">
+                    <h3>👤 Logged in as</h3>
+                    <div class="user-name" id="currentUsername"></div>
+                </div>
+                <div class="online-users">
+                    <h3>🟢 Online Users</h3>
+                    <ul id="usersList"></ul>
+                </div>
             </div>
-            <div class="online-users">
-              <h3>🟢 Online Users</h3>
-              <ul id="usersList"></ul>
+            <div class="chat-area">
+                <div id="messages" class="messages-container"></div>
+                <div id="typingIndicator" class="typing-indicator"></div>
+                <div class="input-area">
+                    <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+                    <button id="sendBtn" onclick="sendMessage()">Send ➤</button>
+                </div>
             </div>
-          </div>
-          <div class="chat-area">
-            <div id="messages" class="messages-container"></div>
-            <div id="typingIndicator" class="typing-indicator"></div>
-            <div class="input-area">
-              <input
-                type="text"
-                id="messageInput"
-                placeholder="Type a message..."
-                onkeypress="handleKeyPress(event)"
-              />
-              <button id="sendBtn" onclick="sendMessage()">Send ➤</button>
-            </div>
-          </div>
         </div>
-      </div>
-      <script>
+    </div>
+
+    <script>
         let socket;
-        let currentUser = "";
+        let currentUser = '';
         let typingTimeout;
 
         function joinChat() {
-          const username = document
-            .getElementById("usernameInput")
-            .value.trim();
-          if (!username) {
-            alert("Please enter a username!");
-            return;
-          }
-
-          currentUser = username;
-          document.getElementById("loginModal").style.display = "none";
-          document.getElementById("chatContainer").style.display = "block";
-          document.getElementById("currentUsername").textContent = username;
-
-          // Initialize socket connection
-          socket = io();
-
-          socket.on("connect", function () {
-            socket.emit("join", { username: currentUser });
-          });
-          // Listen for messages
-          socket.on("message", function (data) {
-            addMessage(data);
-          });
-
-          socket.on("user_joined", function (data) {
-            addSystemMessage(`${data.username} joined the chat`);
-          });
-
-          socket.on("user_left", function (data) {
-            addSystemMessage(`${data.username} left the chat`);
-          });
-
-          socket.on("update_users", function (users) {
-            updateUsersList(users);
-          });
-
-          socket.on("user_typing", function (data) {
-            updateTypingIndicator(data);
-          });
-        }
-
-        function sendMessage() {
-          const input = document.getElementById("messageInput");
-          const text = input.value.trim();
-
-          if (text && socket) {
-            socket.emit("send_message", { text: text });
-            input.value = "";
-            input.focus();
-          }
+            const username = document.getElementById('usernameInput').value.trim();
+            if (!username) {
+                alert('Please enter a username!');
+                return;
+            }
+            
+            currentUser = username;
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('chatContainer').style.display = 'block';
+            document.getElementById('currentUsername').textContent = username;
+            
+            // Initialize socket connection
+            socket = io();
+            
+            socket.on('connect', function() {
+                socket.emit('join', { username: currentUser });
+            });
+            
+            // Listen for messages
+            socket.on('message', function(data) {
+                addMessage(data);
+            });
+            
+            socket.on('user_joined', function(data) {
+                addSystemMessage(`${data.username} joined the chat`);
+            });
+            
+            socket.on('user_left', function(data) {
+                addSystemMessage(`${data.username} left the chat`);
+            });
+            
+            socket.on('update_users', function(users) {
+                updateUsersList(users);
+            });
+            
+            socket.on('user_typing', function(data) {
+                updateTypingIndicator(data);
+            });
         }
         
-      </script>
-    </body>
-  </head>
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            if (text && socket) {
+                socket.emit('send_message', { text: text });
+                input.value = '';
+                input.focus();
+            }
+        }
+        
+        function addMessage(data) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            
+            if (data.system) {
+                messageDiv.innerHTML = `<div class="system-message">${data.text}</div>`;
+            } else {
+                const isCurrentUser = data.username === currentUser;
+                messageDiv.innerHTML = `
+                    <div class="message-header">
+                        <span class="username">${data.username}</span>
+                        <span class="timestamp">${data.timestamp}</span>
+                    </div>
+                    <div class="message-text">${escapeHtml(data.text)}</div>
+                `;
+            }
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function addSystemMessage(text) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'system-message';
+            messageDiv.textContent = text;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function updateUsersList(users) {
+            const usersList = document.getElementById('usersList');
+            usersList.innerHTML = '';
+            users.forEach(user => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="online-dot"></span>
+                    <span>${escapeHtml(user)}</span>
+                `;
+                usersList.appendChild(li);
+            });
+        }
+        
+        function updateTypingIndicator(data) {
+            const indicator = document.getElementById('typingIndicator');
+            if (data.is_typing) {
+                indicator.textContent = `${data.username} is typing...`;
+            } else if (indicator.textContent.includes(data.username)) {
+                indicator.textContent = '';
+            }
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            } else {
+                // Emit typing event
+                socket.emit('typing', { is_typing: true });
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => {
+                    socket.emit('typing', { is_typing: false });
+                }, 1000);
+            }
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
 </html>
