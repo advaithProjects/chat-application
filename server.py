@@ -2,14 +2,10 @@ from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from datetime import datetime
 import uuid
-import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key')
-
-socketio = SocketIO(app,
-                    cors_allowed_origins="*",
-                    async_mode='eventlet')
+app.config['SECRET_KEY'] = 'your-secret-key-here'
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Store active users and rooms
 active_users = {}
@@ -87,5 +83,4 @@ def handle_typing(data):
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    socketio.run(app, host='0.0.0.0', port=port, debug=True)
+    socketio.run(app, debug=True, port=5000)
